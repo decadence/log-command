@@ -1,0 +1,14 @@
+{
+    "name": "decadence/log-command",
+    "description": "Класс для сохранения вывода Laravel-команды в БД",
+
+    "require": {
+        "laravel/framework": "^10.0"
+    },
+
+    "autoload": {
+        "psr-4": {
+            "LogCommand\\": "src/"
+        }
+    }
+}

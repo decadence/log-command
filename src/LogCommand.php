@@ -1,9 +1,10 @@
 <?php
 
-namespace App\Console;
+namespace Decadence;
 
 use App;
 use Carbon\Carbon;
+use Decadence\Models\CronLog;
 use Illuminate\Console\Command;
 
 /**
@@ -30,17 +31,15 @@ class LogCommand extends Command
     protected $id;
 
     /**
-     * Путь к классу модели
-     * @var
-     */
-    protected $modelClass;
-
-    /**
      * Массив накопленных данных для лога
      * @var string
      */
     protected $logText = [];
 
+    /**
+     * Начало команды
+     * @return void
+     */
     public function start()
     {
         $this->startTime = microtime(true);
@@ -77,7 +76,7 @@ class LogCommand extends Command
 
         $message = implode("\n", $this->logText);
 
-        $item = $this->modelClass::find($this->id);
+        $item = CronLog::find($this->id);
 
         $item->output .= $message . "\n";
         $item->save();
@@ -105,7 +104,7 @@ class LogCommand extends Command
             return;
         }
 
-        $item = new $this->modelClass();
+        $item = new CronLog();
 
         $item->forceFill([
             "description" => $this->description,
@@ -120,16 +119,16 @@ class LogCommand extends Command
     }
 
     /**
-     * Запоминаем время выполнения
+     * Окончание команды
      */
-    public function record()
+    public function finish()
     {
         // сбрасываем остальные сообщения
         $this->flushLog();
 
-        $runTime = round(microtime(true) - $this->startTime, 4);
+        $runTime = round(microtime(true) - $this->startTime, 3);
 
-        $item = $this->modelClass::find($this->id);
+        $item = CronLog::find($this->id);
 
         $item->forceFill([
             "run_seconds" => $runTime,

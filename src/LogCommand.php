@@ -28,7 +28,7 @@ class LogCommand extends Command
      * ID записи лога в базе
      * @var
      */
-    protected $id;
+    protected $modelId;
 
     /**
      * Массив накопленных данных для лога
@@ -40,7 +40,7 @@ class LogCommand extends Command
      * Начало команды
      * @return void
      */
-    public function start()
+    protected function logStart()
     {
         $this->startTime = microtime(true);
     }
@@ -49,7 +49,7 @@ class LogCommand extends Command
      * Логирование вместе с сохранением в строку
      * @param $message
      */
-    public function log($message, $output = true)
+    protected function log($message, $output = true)
     {
         $now = Carbon::now();
 
@@ -61,7 +61,7 @@ class LogCommand extends Command
 
         $this->logText[] = "{$time} — {$message}";
 
-        // если пора сбросить лог в базу
+        // если пора сбросить лог в БД
         if (count($this->logText) === $this->flushPer) {
             $this->flushLog();
         }
@@ -76,7 +76,7 @@ class LogCommand extends Command
 
         $message = implode("\n", $this->logText);
 
-        $item = CronLog::find($this->id);
+        $item = CronLog::find($this->modelId);
 
         $item->output .= $message . "\n";
         $item->save();
@@ -100,7 +100,7 @@ class LogCommand extends Command
     protected function createLog()
     {
         // запись уже есть
-        if ($this->id) {
+        if ($this->modelId) {
             return;
         }
 
@@ -115,20 +115,20 @@ class LogCommand extends Command
 
         $item->save();
 
-        $this->id = $item->getKey();
+        $this->modelId = $item->getKey();
     }
 
     /**
      * Окончание команды
      */
-    public function finish()
+    protected function logFinish()
     {
         // сбрасываем остальные сообщения
         $this->flushLog();
 
         $runTime = round(microtime(true) - $this->startTime, 3);
 
-        $item = CronLog::find($this->id);
+        $item = CronLog::find($this->modelId);
 
         $item->forceFill([
             "run_seconds" => $runTime,

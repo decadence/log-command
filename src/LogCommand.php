@@ -145,6 +145,6 @@ class LogCommand extends Command
         $memory = round(memory_get_peak_usage() / 1024 / 1024, 2);
         $memoryNow = round(memory_get_usage() / 1024 / 1024, 2);
 
-        $this->log("Потребление памяти (max / current): {$memory} MB / {$memoryNow} MB");
+        $this->log("Потребление памяти (максимальное / текущее): {$memory} MB / {$memoryNow} MB");
     }
 }

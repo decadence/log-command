@@ -140,7 +140,7 @@ class LogCommand extends Command
     /**
      * Вывод информации о потреблении памяти
      */
-    protected function memory()
+    protected function memoryUsage()
     {
         $memory = round(memory_get_peak_usage() / 1024 / 1024, 2);
         $memoryNow = round(memory_get_usage() / 1024 / 1024, 2);

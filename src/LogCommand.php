@@ -16,7 +16,7 @@ class LogCommand extends Command
      * Сколько сообщений должен набрать лог перед сохранением в базу
      * @var int
      */
-    protected $flushPer = 5;
+    protected int $flushPer = 10;
 
     /**
      * Время запуска команды
@@ -34,7 +34,12 @@ class LogCommand extends Command
      * Массив накопленных данных для лога
      * @var string
      */
-    protected $logText = [];
+    protected array $logText = [
+        "info" => [],
+        "errors" => [],
+    ];
+
+    protected string $dateFormat = "H:i:s.u";
 
     /**
      * Начало команды
@@ -49,40 +54,64 @@ class LogCommand extends Command
      * Логирование вместе с сохранением в строку
      * @param $message
      */
-    protected function log($message, $output = true)
+    protected function log($message, $output = true, $type = "info")
     {
         $now = Carbon::now();
 
-        $time = $now->format("H:i:s");
+        $time = $now->format($this->dateFormat);
 
+        // выводить ли в текущую консоль
         if ($output) {
             $this->info($message);
         }
 
-        $this->logText[] = "{$time} — {$message}";
+        $this->logText[$type][] = "{$time} — {$message}";
 
         // если пора сбросить лог в БД
-        if (count($this->logText) === $this->flushPer) {
+        if ($this->getLogSize() === $this->flushPer) {
             $this->flushLog();
         }
     }
 
     /**
-     * Сброс текущего лога
+     * Суммарный размер лога по всем типам сообщений
+     */ 
+    protected function getLogSize() {
+        $size = 0;
+
+        foreach ($this->logText as $key => $value) {
+            $size += count($value);
+        }
+
+        return $size;
+    }
+
+    /**
+     * Сброс текущего лога в БД
      */
     protected function flushLog()
     {
         $this->createLog();
 
-        $message = implode("\n", $this->logText);
-
         $item = CronLog::find($this->modelId);
 
-        $item->output .= $message . "\n";
+        if($this->logText["info"]) {
+            $message = implode("\n", $this->logText["info"]);
+            $item->output .= $message . "\n";
+        }
+
+        if($this->logText["errors"]) {
+            $errors = implode("\n", $this->logText["errors"]);
+            $item->errors .= $errors . "\n";
+        }        
+
         $item->save();
 
         // сбрасываем текущий лог
-        $this->logText = [];
+        $this->logText = [
+            "info" => [],
+            "errors" => [],
+        ];
     }
 
     /**
@@ -110,11 +139,13 @@ class LogCommand extends Command
             "description" => $this->description,
             "command" => $this->getName(),
             "output" => "",
+            "errors" => "",
             "run_seconds" => 0,
         ]);
 
         $item->save();
 
+        // запоминаем ID записи, с которой дальше работать
         $this->modelId = $item->getKey();
     }
 
@@ -142,9 +173,9 @@ class LogCommand extends Command
      */
     protected function memoryUsage()
     {
-        $memory = round(memory_get_peak_usage() / 1024 / 1024, 2);
+        $memoryMax = round(memory_get_peak_usage() / 1024 / 1024, 2);
         $memoryNow = round(memory_get_usage() / 1024 / 1024, 2);
 
-        $this->log("Потребление памяти (максимальное / текущее): {$memory} MB / {$memoryNow} MB");
+        $this->log("Потребление памяти (максимальное / текущее): {$memoryMax} MB / {$memoryNow} MB");
     }
 }

@@ -51,6 +51,14 @@ class LogCommand extends Command
     }
 
     /**
+     * Запись в лог ошибок
+     */  
+    protected function errorLog($message) {
+        // всегда выводим ошибки на экран
+        $this->log($message, true, "errors");
+    }
+
+    /**
      * Логирование вместе с сохранением в строку
      * @param $message
      */

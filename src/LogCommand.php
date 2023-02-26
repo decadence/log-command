@@ -52,6 +52,9 @@ class LogCommand extends Command
     protected function logStart()
     {
         $this->startTime = microtime(true);
+
+        $message = "Запуск команды {$this->getName()}";
+        $this->log($message);
     }
 
     /**
@@ -168,6 +171,9 @@ class LogCommand extends Command
      */
     protected function logFinish()
     {
+        $message = "Завершение команды {$this->getName()}";
+        $this->log($message);
+
         // сбрасываем остальные сообщения
         $this->flushLog();
 

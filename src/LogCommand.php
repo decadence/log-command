@@ -187,10 +187,15 @@ class LogCommand extends Command
      */
     protected function memoryUsage()
     {
-        $memoryMax = round(memory_get_peak_usage() / 1024 / 1024, 2);
-        $memoryNow = round(memory_get_usage() / 1024 / 1024, 2);
+        $memoryLimit = ini_get("memory_limit");
 
-        $message = "Потребление памяти (максимальное / текущее): {$memoryMax} MB / {$memoryNow} MB";
+        // знаменатель для перевода в мегабайты
+        $toMb = 1024 * 1024;
+
+        $memoryMax = round(memory_get_peak_usage() / $toMb, 2);
+        $memoryNow = round(memory_get_usage() / $toMb, 2);
+
+        $message = "Потребление памяти (максимальное / текущее / лимит): {$memoryMax} MB / {$memoryNow} MB / {$memoryLimit}";
 
         $this->log($message);
     }

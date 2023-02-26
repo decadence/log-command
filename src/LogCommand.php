@@ -8,7 +8,8 @@ use Decadence\Models\CronLog;
 use Illuminate\Console\Command;
 
 /**
- * Обёртка над командой для записи лога в базу данных
+ * Родительский класс для команды, которая
+ * записывает свой вывод в БД
  */
 class LogCommand extends Command
 {
@@ -39,6 +40,9 @@ class LogCommand extends Command
         "errors" => [],
     ];
 
+    /**
+     * Формат даты для времени сообщения в логе
+     */  
     protected string $dateFormat = "H:i:s.u";
 
     /**
@@ -59,7 +63,7 @@ class LogCommand extends Command
     }
 
     /**
-     * Логирование вместе с сохранением в строку
+     * Логирование вместе для дальнейшего сохранения в БД
      * @param $message
      */
     protected function log($message, $output = true, $type = "info")
@@ -103,14 +107,16 @@ class LogCommand extends Command
 
         $item = CronLog::find($this->modelId);
 
+        $separator = "\n";
+
         if($this->logText["info"]) {
-            $message = implode("\n", $this->logText["info"]);
-            $item->output .= $message . "\n";
+            $message = implode($separator, $this->logText["info"]);
+            $item->output .= $message . $separator;
         }
 
         if($this->logText["errors"]) {
-            $errors = implode("\n", $this->logText["errors"]);
-            $item->errors .= $errors . "\n";
+            $errors = implode($separator, $this->logText["errors"]);
+            $item->errors .= $errors . $separator;
         }        
 
         $item->save();
@@ -146,8 +152,8 @@ class LogCommand extends Command
         $item->forceFill([
             "description" => $this->description,
             "command" => $this->getName(),
-            "output" => "",
-            "errors" => "",
+            "output" => null,
+            "errors" => null,
             "run_seconds" => 0,
         ]);
 
@@ -184,6 +190,8 @@ class LogCommand extends Command
         $memoryMax = round(memory_get_peak_usage() / 1024 / 1024, 2);
         $memoryNow = round(memory_get_usage() / 1024 / 1024, 2);
 
-        $this->log("Потребление памяти (максимальное / текущее): {$memoryMax} MB / {$memoryNow} MB");
+        $message = "Потребление памяти (максимальное / текущее): {$memoryMax} MB / {$memoryNow} MB";
+
+        $this->log($message);
     }
 }

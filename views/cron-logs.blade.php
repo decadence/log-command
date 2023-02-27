@@ -1,4 +1,4 @@
-<table class="table is-bordered is-striped is-narrow is-hoverable">
+<table>
     <thead>
     <tr>
         <th>
@@ -12,11 +12,11 @@
             Описание
         </th>
 
-        <th style="white-space: pre-wrap">
+        <th>
             Вывод
         </th>
 
-        <th style="white-space: pre-wrap">
+        <th>
             Ошибки
         </th>
 
@@ -39,7 +39,9 @@
     @foreach($logs as $log)
         <tr>
             <td>
-                {{ $log->id }}
+                <a href="{{ route("settings.logs", $log) }}">
+                    {{ $log->id }}
+                </a>
             </td>
             <td>
                 {{ $log->command }}
@@ -49,13 +51,10 @@
                 {{ $log->description }}
             </td>
 
-            <td>
-                {{ $log->output }}
-            </td>
+            {{-- отображаем лог только на деталке и без лишних пробелов --}}
+            <td style="white-space: pre-wrap">@if($logs->count() === 1){{ $log->output }}@endif</td>
 
-            <td>
-                {{ $log->errors }}
-            </td>
+            <td style="white-space: pre-wrap">@if($logs->count() === 1){{ $log->errors }}@endif</td>
 
             <td>
                 {{ $log->run_seconds }}

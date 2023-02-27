@@ -43,7 +43,7 @@ class LogCommand extends Command
     /**
      * Формат даты для времени сообщения в логе
      */  
-    protected string $dateFormat = "H:i:s.u";
+    protected string $dateFormat = "H:i:s.v";
 
     /**
      * Начало команды
